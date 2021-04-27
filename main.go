@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -82,7 +84,7 @@ func randRead(db DBInterface) time.Duration {
 	}
 	log.Println("randRead err count = ", count)
 	t2 := time.Since(t1)
-	log.Println("randRead  end, cost time ", t2)
+	//log.Println("randRead  end, cost time ", t2)
 	return t2
 }
 
@@ -170,7 +172,23 @@ func main() {
 	bsync := flag.Bool("sync", true, "b sync")
 	delolddb := flag.Bool("d", true, "delete old")
 	dbtype := flag.String("t", "all", "bolt,pebble,badger,all")
+	parse := flag.Int("p", 0, "use parse")
 	flag.Parse()
+
+	if *parse == 1 {
+		fmt.Println("parse file")
+		disk := parsedisk()
+		if disk != nil {
+			printdisk(disk)
+		}
+
+		cpu := parsecpu()
+		if cpu != nil {
+			printcpu(cpu)
+		}
+		return
+	}
+
 	g_count = *aNum
 	fmt.Println(os.Args)
 	mapstatis := make(map[string]*timeStatistics)
@@ -179,6 +197,12 @@ func main() {
 		os.RemoveAll(*dFile)
 	}
 	os.Mkdir(*dFile, 0666)
+
+	//启动iostat
+	list1 = make([]context.CancelFunc, 0)
+	wg := &sync.WaitGroup{}
+	go startproc([]string{"-d", "-k", "1"}, "disk", wg)
+	go startproc([]string{"-c", "1"}, "cpu", wg)
 
 	switch *dbtype {
 	case "all":
@@ -200,6 +224,12 @@ func main() {
 		fmt.Println(val)
 		fmt.Println("-----------------------------------")
 	}
+
+	for _, cacel := range list1 {
+		cacel()
+	}
+
+	wg.Wait()
 
 }
 
