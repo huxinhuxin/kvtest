@@ -43,6 +43,8 @@ var g_count int
 
 const prikey = "user/"
 
+var g_cache []byte
+
 func sequencewrite(db DBInterface, data []byte) time.Duration {
 	log.Println("sequence write begin")
 	t1 := time.Now()
@@ -76,10 +78,11 @@ func randRead(db DBInterface) time.Duration {
 	for i := 0; i < g_count; i++ {
 		tmp := rand.Int31n(int32(g_count))
 		key := append([]byte(prikey), I2b(uint64(tmp))...)
-		_, err := db.Get(key)
+		v, err := db.Get(key)
 		if err != nil {
 			count++
 		}
+		copy(g_cache, v)
 
 	}
 	log.Println("randRead err count = ", count)
@@ -188,7 +191,7 @@ func main() {
 		}
 		return
 	}
-
+	g_cache = make([]byte, 4096)
 	g_count = *aNum
 	fmt.Println(os.Args)
 	mapstatis := make(map[string]*timeStatistics)
