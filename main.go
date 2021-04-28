@@ -197,12 +197,14 @@ func main() {
 		os.RemoveAll(*dFile)
 	}
 	os.Mkdir(*dFile, 0666)
+	os.RemoveAll("data")
+	os.Mkdir("data", 0666)
 
 	//启动iostat
 	list1 = make([]context.CancelFunc, 0)
 	wg := &sync.WaitGroup{}
-	go startproc([]string{"-d", "-k", "1"}, "disk", wg)
-	go startproc([]string{"-c", "1"}, "cpu", wg)
+	go startproc([]string{"-d", "-k", "1"}, "data/disk", wg)
+	go startproc([]string{"-c", "1"}, "data/cpu", wg)
 
 	switch *dbtype {
 	case "all":

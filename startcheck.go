@@ -40,7 +40,7 @@ type disk struct {
 }
 
 func parsedisk() map[string]*disk {
-	file, err := os.Open("disk")
+	file, err := os.Open("data/disk")
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil
@@ -134,7 +134,7 @@ type cpu struct {
 }
 
 func parsecpu() *cpu {
-	file, err := os.Open("cpu")
+	file, err := os.Open("data/cpu")
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil
