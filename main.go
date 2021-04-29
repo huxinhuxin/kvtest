@@ -168,6 +168,10 @@ func comtestdb(db DBInterface, path string, bsync bool) *timeStatistics {
 	case 3:
 		timeStat.randRead = randRead(db)
 		timeStat.getAll = readall(db)
+	case 4:
+		timeStat.sequewrite = sequencewrite(db, writedata)
+		timeStat.randDel = randdel(db)
+		timeStat.randWrite = randwrite(db, writedata)
 
 	default:
 		timeStat.sequewrite = sequencewrite(db, writedata)
