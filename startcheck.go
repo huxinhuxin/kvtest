@@ -124,6 +124,92 @@ func printdisk(m map[string]*disk) {
 	}
 }
 
+type disk1 struct {
+	device string
+	ws     float64
+	wkbs   float64
+}
+
+func parsedisk1() map[string]*disk1 {
+	file, err := os.Open("data/diskx")
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil
+	}
+	//ret:=make([]*disk,0)
+	ret := make(map[string][]*disk1)
+	reder := bufio.NewReader(file)
+	rows := 0
+	for {
+		buf, err := reder.ReadString('\n')
+		if err != nil {
+			if io.EOF == err {
+				break
+			}
+			fmt.Println(err.Error())
+			return nil
+		}
+
+		str := string(buf)
+		//str = strings.ReplaceAll(str, "  ", " ")
+
+		arr := strings.Fields(str)
+
+		if len(arr) == 0 {
+			rows = 0
+			continue
+		}
+
+		if arr[0] == "Device" {
+			rows = 1
+			continue
+		}
+		if rows == 0 {
+			continue
+		}
+
+		dis := &disk1{}
+		dis.device = arr[0]
+		dis.ws, _ = strconv.ParseFloat(arr[7], 64)
+		dis.wkbs, _ = strconv.ParseFloat(arr[8], 64)
+
+		_, ok := ret[dis.device]
+		if ok {
+			ret[dis.device] = append(ret[dis.device], dis)
+		} else {
+			silce := make([]*disk1, 0)
+			silce = append(silce, dis)
+			ret[dis.device] = silce
+		}
+	}
+
+	//求平均值
+	avg := make(map[string]*disk1)
+	for key, val := range ret {
+		val = val[1:]
+		avg[key] = &disk1{device: key}
+
+		for _, v1 := range val {
+			avg[key].ws += v1.ws
+			avg[key].wkbs += v1.wkbs
+
+		}
+		size := len(val)
+		if size > 0 {
+			avg[key].ws /= float64(size)
+			avg[key].wkbs /= float64(size)
+		}
+	}
+	return avg
+}
+
+func printdisk1(m map[string]*disk1) {
+	fmt.Printf("\n%-20s%-20s%-20s\n", "Device", "w/s", "wk/s")
+	for _, v := range m {
+		fmt.Printf("%-20s%-20.2f%-20.2f\n", v.device, v.ws, v.wkbs)
+	}
+}
+
 type cpu struct {
 	user   float64
 	nice   float64

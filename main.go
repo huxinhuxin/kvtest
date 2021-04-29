@@ -204,6 +204,11 @@ func main() {
 		if cpu != nil {
 			printcpu(cpu)
 		}
+
+		diskx := parsedisk1()
+		if diskx != nil {
+			printdisk1(diskx)
+		}
 		return
 	}
 	g_cache = make([]byte, 4096)
@@ -223,7 +228,7 @@ func main() {
 	wg := &sync.WaitGroup{}
 	go startproc([]string{"-d", "-k", "1"}, "data/disk", wg)
 	go startproc([]string{"-c", "1"}, "data/cpu", wg)
-
+	go startproc([]string{"-d", "-x", "1"}, "data/diskx", wg)
 	switch *dbtype {
 	case "all":
 		t1 := createtestdb("bolt", *dFile, *bsync)

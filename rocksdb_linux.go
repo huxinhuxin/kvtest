@@ -20,6 +20,10 @@ func NewRocksDB() DBInterface {
 
 func (db *Gorocksdb) Open(path string, sync bool) error {
 	opt := gorocksdb.NewDefaultOptions()
+	env := gorocksdb.NewDefaultEnv()
+	env.SetBackgroundThreads(3)
+	opt.SetEnv(env)
+	opt.SetMaxBackgroundCompactions(5)
 	opt.SetCreateIfMissing(true)
 
 	database, err := gorocksdb.OpenDb(opt, path)
