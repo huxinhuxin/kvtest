@@ -45,6 +45,8 @@ const prikey = "user/"
 
 var g_cache []byte
 
+var g_opt int
+
 func sequencewrite(db DBInterface, data []byte) time.Duration {
 	log.Println("sequence write begin")
 	t1 := time.Now()
@@ -157,11 +159,23 @@ func comtestdb(db DBInterface, path string, bsync bool) *timeStatistics {
 
 	timeStat := &timeStatistics{}
 
-	timeStat.sequewrite = sequencewrite(db, writedata)
-	timeStat.randRead = randRead(db)
-	timeStat.randDel = randdel(db)
-	timeStat.randWrite = randwrite(db, writedata)
-	timeStat.getAll = readall(db)
+	switch g_opt {
+	case 1:
+		timeStat.sequewrite = sequencewrite(db, writedata)
+		timeStat.randWrite = randwrite(db, writedata)
+	case 2:
+		timeStat.randDel = randdel(db)
+	case 3:
+		timeStat.randRead = randRead(db)
+		timeStat.getAll = readall(db)
+
+	default:
+		timeStat.sequewrite = sequencewrite(db, writedata)
+		timeStat.randRead = randRead(db)
+		timeStat.randDel = randdel(db)
+		timeStat.randWrite = randwrite(db, writedata)
+		timeStat.getAll = readall(db)
+	}
 
 	db.Close()
 	timeStat.total = time.Since(t1)
@@ -176,8 +190,9 @@ func main() {
 	delolddb := flag.Bool("d", true, "delete old")
 	dbtype := flag.String("t", "all", "bolt,pebble,badger,all")
 	parse := flag.Int("p", 0, "use parse")
+	opt := flag.Int("o", 0, " 0:all, 1:only write  2:only delete 3:only read")
 	flag.Parse()
-
+	g_opt = *opt
 	if *parse == 1 {
 		fmt.Println("parse file")
 		disk := parsedisk()
